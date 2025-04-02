@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>PSP Social</title>
+    <script type="text/javascript">
+      // Script de gestion des routes pour SPA sur GitHub Pages
+      (function(l) {
+        if (l.search[1] === '/' ) {
+          var decoded = l.search.slice(1).split('&').map(function(s) { 
+            return s.replace(/~and~/g, '&')
+          }).join('?');
+          window.history.replaceState(null, null,
+              l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      }(window.location))
+    </script>
+  </head>
+  <body>
+    <!-- Cette page est utilisée uniquement pour la redirection -->
+    <div id="loading" style="display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; font-family: Arial, sans-serif;">
+      <img src="https://res.cloudinary.com/dxy0fiahv/image/upload/v1739129965/PSP_copie_xtws5v.png" alt="Logo PSP" style="width: 100px; height: 100px; margin-bottom: 20px;">
+      <h2>Chargement de l'application PSP...</h2>
+      <p>Vous allez être redirigé automatiquement.</p>
+      <div style="width: 50px; height: 50px; border: 5px solid rgba(230, 57, 70, 0.2); border-top-color: #E63946; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+    </div>
+    
+    <style>
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+    
+    <script>
+      // Redirection vers la page principale après un court délai
+      setTimeout(function() {
+        window.location.href = './index';
+      }, 1500);
+    </script>
+  </body>
+</html>
