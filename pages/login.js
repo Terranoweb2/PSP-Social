@@ -2,12 +2,16 @@ import { useState } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
 import { FaLock, FaEnvelope } from 'react-icons/fa'
+import { supabase } from '../lib/supabaseClient'
+import { useRouter } from 'next/router'
+import toast from 'react-hot-toast'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const router = useRouter()
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -15,16 +19,81 @@ export default function Login() {
     setError(null)
 
     try {
-      // Dans une future version, nous connecterons ceci à Supabase
-      // Pour l'instant, c'est juste une simulation
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      console.log('Tentative de connexion avec:', { email });
+      
+      // Connexion avec Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      
+      if (error) {
+        console.error('Erreur Supabase:', error);
+        if (error.message.includes('Invalid login credentials')) {
+          throw new Error('Identifiants invalides. Vérifiez votre email et mot de passe.');
+        } else {
+          throw error;
+        }
+      }
+      
+      console.log('Connexion réussie:', data);
       
       // Redirection vers le tableau de bord après connexion réussie
-      window.location.href = '/member/dashboard'
+      toast.success('Connexion réussie!')
+      router.push('/member/dashboard')
     } catch (error) {
-      setError("Une erreur s'est produite lors de la connexion. Veuillez réessayer.")
+      console.error('Erreur de connexion:', error)
+      setError(error.message || "Une erreur s'est produite lors de la connexion. Veuillez vérifier vos identifiants.")
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Fonction pour créer un compte de test si nécessaire
+  const createTestAccount = async () => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      // Créer un utilisateur de test
+      const testEmail = 'test@example.com';
+      const testPassword = 'password123';
+      
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: testEmail,
+        password: testPassword,
+      })
+      
+      if (authError) throw authError;
+      
+      // Ajouter les données du membre
+      const { error: memberError } = await supabase
+        .from('members')
+        .insert([
+          { 
+            user_id: authData.user.id,
+            first_name: 'Test',
+            last_name: 'Utilisateur',
+            email: testEmail,
+            phone: '0123456789',
+            address: 'Adresse de test',
+            registration_date: new Date().toISOString(),
+            member_status: 'actif'
+          }
+        ])
+      
+      if (memberError) throw memberError;
+      
+      // Remplir automatiquement les champs
+      setEmail(testEmail);
+      setPassword(testPassword);
+      
+      toast.success('Compte de test créé! Vous pouvez maintenant vous connecter.');
+    } catch (error) {
+      console.error('Erreur création compte test:', error);
+      setError(`Erreur lors de la création du compte test: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -136,6 +205,16 @@ export default function Login() {
                     Adhérer au PSP
                   </Link>
                 </p>
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <button
+                  onClick={createTestAccount}
+                  disabled={loading}
+                  className="w-full text-sm text-gray-500 hover:text-primary"
+                >
+                  Créer un compte de test (pour démo uniquement)
+                </button>
               </div>
             </div>
           </div>

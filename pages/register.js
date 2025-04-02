@@ -2,8 +2,12 @@ import { useState } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
 import { FaUser, FaEnvelope, FaLock, FaIdCard, FaPhone, FaMapMarkerAlt, FaCalendarAlt } from 'react-icons/fa'
+import { supabase } from '../lib/supabaseClient'
+import { useRouter } from 'next/router'
+import toast from 'react-hot-toast'
 
 export default function Register() {
+  const router = useRouter()
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -84,15 +88,60 @@ export default function Register() {
     setError(null)
 
     try {
-      // Simulation d'un délai d'inscription
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      console.log('Données du formulaire:', formData);
       
-      // Dans une future version, ce code sera remplacé par l'intégration avec Supabase
+      // Inscription avec Supabase
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+      })
       
-      // Redirection vers la page de succès ou le tableau de bord
-      window.location.href = '/member/dashboard'
+      if (authError) {
+        console.error('Erreur auth Supabase:', authError);
+        throw authError;
+      }
+      
+      console.log('Utilisateur créé:', authData);
+      
+      if (!authData || !authData.user || !authData.user.id) {
+        throw new Error("Impossible de créer l'utilisateur. Veuillez réessayer.");
+      }
+      
+      // Ajouter les données du membre dans la table 'members'
+      const memberData = {
+        user_id: authData.user.id,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        date_of_birth: formData.dateOfBirth,
+        address: formData.address,
+        id_number: formData.idNumber,
+        registration_date: new Date().toISOString(),
+        member_status: 'actif'
+      };
+      
+      console.log('Données membre à insérer:', memberData);
+      
+      const { data: insertedMember, error: memberError } = await supabase
+        .from('members')
+        .insert([memberData])
+        .select();
+      
+      if (memberError) {
+        console.error('Erreur insertion membre:', memberError);
+        throw memberError;
+      }
+      
+      console.log('Membre inséré:', insertedMember);
+      
+      toast.success("Inscription réussie! Vous pouvez maintenant vous connecter.")
+      
+      // Redirection vers la page de connexion
+      router.push('/login')
     } catch (error) {
-      setError("Une erreur s'est produite lors de l'inscription. Veuillez réessayer.")
+      console.error("Erreur d'inscription:", error);
+      setError(`Une erreur s'est produite lors de l'inscription: ${error.message || 'Erreur inconnue'}`);
     } finally {
       setLoading(false)
     }
