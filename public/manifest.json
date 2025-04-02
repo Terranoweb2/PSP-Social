@@ -1,0 +1,22 @@
+{
+  "name": "PSP Mobile",
+  "short_name": "PSP",
+  "description": "Application mobile officielle du Parti Socialiste Panafricain",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1f2937",
+  "theme_color": "#1f2937",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://res.cloudinary.com/dxy0fiahv/image/upload/v1739129965/PSP_copie_xtws5v.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://res.cloudinary.com/dxy0fiahv/image/upload/v1739129965/PSP_copie_xtws5v.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
